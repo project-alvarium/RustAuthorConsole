@@ -35,9 +35,10 @@ Next place the channel address into the AnnAddress field of the configurations o
 The simulator will generate new subscribers and automatically communicate the subscription link to the Author Console. 
 Once the author console sees this request, it will process it, and return a keyload link. The Subscriber should be able 
 to see this new keyload message appear if they use a `get_next_msgs()` command (conducted authomatically in the 
-`await_keyload()` function of the simulator's Subscriber class. Sensor readings and annotations can then
-be sent as signed_packets over the tangle within the channel. The author will detect these new messages and store the 
-annotations and readings accordingly. 
+`await_keyload()` function of the simulator's Subscriber class). 
+
+Sensor readings and annotations can then be sent as signed_packets over the tangle within the channel. The author will 
+detect these new messages and store the annotations and readings accordingly. 
 
 
 ### Data Types 
