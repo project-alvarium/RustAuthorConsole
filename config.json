@@ -1,0 +1,7 @@
+{
+  "node": "http://localhost:14265",
+  "mwm": 5,
+  "local_pow": true,
+  "api_port": 8080,
+  "seed": null
+}
