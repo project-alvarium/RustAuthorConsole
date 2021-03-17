@@ -10,7 +10,7 @@ pub struct AlvariumHeader {
 pub struct AlvariumAnnotationPayload {
     pub iss: String,
     pub sub: String,
-    pub iat: String,
+    pub iat: u64,
     pub jti: String,
     pub ann: String,
     pub avl: f64

@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result,anyhow};
 use iota_streams::app::transport::{
     TransportOptions,
     tangle::{
@@ -54,20 +54,29 @@ impl ChannelAuthor {
     }
 
     pub fn subscribe(&mut self, link: &str, pk: &Vec<u8>) -> Result<Address> {
-        self.author.receive_subscribe(
-            &Address {
-                appinst: self.channel_address.clone(),
-                msgid: MsgId::from_str(link).unwrap()
-            })?;
+        match MsgId::from_str(link) {
+            Ok(msgid) => {
+                self.
+                    author.
+                    receive_subscribe(
+                        &Address {
+                            appinst: self.channel_address.clone(),
+                            msgid,
+                        })?;
 
-        let keyload = self.author.send_keyload(
-            &self.announcement_id,
-            &PskIds::new(),
-            &vec![PublicKey::from_bytes(pk).unwrap()]
-        )?;
+                let keyload = self.author.send_keyload(
+                    &self.announcement_id,
+                    &PskIds::new(),
+                    &vec![PublicKey::from_bytes(pk).unwrap()]
+                )?;
 
-        // Return the sequence message link
-        Ok(keyload.1.unwrap())
+                // Return the sequence message link
+                Ok(keyload.1.unwrap())
+            },
+            Err(_) => {
+                Err(anyhow!("Error getting msgid from provided link: {}", link))
+            }
+        }
     }
 
     pub fn get_next_msgs(&mut self) -> Result<Vec<(Option<Reading>, Option<Annotation>)>> {

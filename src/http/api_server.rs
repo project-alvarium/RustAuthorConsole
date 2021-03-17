@@ -47,19 +47,35 @@ async fn responder(
     author: Arc<Mutex<ChannelAuthor>>,
     annotation_store: Arc<Mutex<AnnotationStore>>,
     reading_store: Arc<Mutex<ReadingStore>>,
-
 ) -> Result<Response<Body>, GenericError> {
-    match (req.method(), req.uri().path()) {
-        (&Method::POST, "/subscribe") => subscribe_response(req, author).await,
-        (&Method::GET, "/get_channel_address") => channel_address_response(author).await,
-        (&Method::GET, "/get_announcement_id") => announcement_id_response(author).await,
-        (&Method::GET, "/get_readings") => readings_response(req, reading_store).await,
-        (&Method::GET, "/get_annotations") => annotations_response(req, annotation_store).await,
-        (&Method::GET, "/get_confidence_score") => confidence_score_response(req, annotation_store).await,
-        (&Method::GET, "/get_filtered_annotations") => filter_annotations_response(req, annotation_store).await,
-        _ => Ok(Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(NOTFOUND.into())
-            .unwrap()),
+    match req.method() {
+        &Method::OPTIONS => preflight_response().await,
+        _ => match (req.method(), req.uri().path()) {
+            (&Method::POST, "/subscribe") => subscribe_response(req, author).await,
+            (&Method::GET, "/get_channel_address") => {
+                channel_address_response(author).await
+            }
+            (&Method::GET, "/get_announcement_id") => {
+                announcement_id_response(author).await
+            }
+            (&Method::POST, "/get_readings") => {
+                readings_response(req, reading_store).await
+            }
+            (&Method::POST, "/get_annotations") => {
+                annotations_response(req, annotation_store).await
+            }
+            (&Method::POST, "/get_confidence_score") => {
+                confidence_score_response(req, annotation_store).await
+            }
+            (&Method::POST, "/get_filtered_annotations") => {
+                filter_annotations_response(req, annotation_store).await
+            }
+            _ => {
+                Ok(Response::builder()
+                    .status(StatusCode::NOT_FOUND)
+                    .body(NOTFOUND.into())
+                    .unwrap())
+            }
+        }
     }
 }

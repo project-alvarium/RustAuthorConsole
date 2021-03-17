@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use std::collections::HashMap;
 use crate::models::{SensorId, Reading};
 
@@ -24,6 +24,13 @@ impl ReadingStore {
     }
 
     pub fn get(&mut self, sensor_id: &SensorId) -> Result<&Vec<Reading>> {
-        Ok(self.readings.get(sensor_id).unwrap())
+        match self.readings.get(sensor_id) {
+            Some(r) => Ok(r),
+            None => {
+                Err(anyhow!("Key not present"))
+            }
+
+        }
+
     }
 }

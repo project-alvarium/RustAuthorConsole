@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use crate::models::{ReadingId, Annotation};
 use std::collections::{
     hash_map::Iter,
@@ -16,7 +16,7 @@ pub struct AnnotationStore {
 pub struct AnnotationStoreFilter {
     pub iss: Option<String>,
     pub sub: Option<String>,
-    pub iat: Option<String>,
+    pub iat: Option<u64>,
     pub jti: Option<String>,
     pub ann: Option<String>,
 }
@@ -39,7 +39,12 @@ impl AnnotationStore {
     }
 
     pub fn get(&mut self, reading_id: &ReadingId) -> Result<&Vec<Annotation>> {
-        Ok(self.annotations.get(reading_id).unwrap())
+        match self.annotations.get(reading_id) {
+            Some(a) => Ok(a),
+            None => {
+                Err(anyhow!("Key not present"))
+            }
+        }
     }
 
     pub fn iter(&mut self) -> Result<Iter<ReadingId, Vec<Annotation>>> {
