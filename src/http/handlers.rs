@@ -1,14 +1,18 @@
-use anyhow::Result;
+//use anyhow::Result;
 use hyper::{Request, Body, Response, StatusCode, header};
 use crate::streams::ChannelAuthor;
 use crate::models::{SubscriptionRequest, SensorId, ReadingId};
 use std::sync::{Mutex, Arc};
 use crate::store::{ReadingStore, ReadingStoreFilterId, AnnotationStoreFilterId, AnnotationStore, AnnotationStoreFilter};
+use std::error::Error;
+
+
+type GenericError = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn subscribe_response(
     req: Request<Body>,
     author: Arc<Mutex<ChannelAuthor>>,
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let data = hyper::body::to_bytes(req.into_body()).await?;
 
     let response;
@@ -49,7 +53,7 @@ pub async fn subscribe_response(
 
 pub async fn channel_address_response(
     author: Arc<Mutex<ChannelAuthor>>,
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let response;
 
     let author = author.lock().unwrap();
@@ -76,7 +80,7 @@ pub async fn channel_address_response(
 
 pub async fn announcement_id_response(
     author: Arc<Mutex<ChannelAuthor>>,
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let response;
 
     let author = author.lock().unwrap();
@@ -105,7 +109,7 @@ pub async fn announcement_id_response(
 pub async fn readings_response(
     req: Request<Body>,
     reading_store: Arc<Mutex<ReadingStore>>
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let data = hyper::body::to_bytes(req.into_body()).await?;
 
     let response;
@@ -150,7 +154,7 @@ pub async fn readings_response(
 pub async fn confidence_score_response(
     req: Request<Body>,
     annotation_store: Arc<Mutex<AnnotationStore>>
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let data = hyper::body::to_bytes(req.into_body()).await?;
 
     let response;
@@ -204,7 +208,7 @@ pub async fn confidence_score_response(
 pub async fn annotations_response(
     req: Request<Body>,
     annotation_store: Arc<Mutex<AnnotationStore>>
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let data = hyper::body::to_bytes(req.into_body()).await?;
 
     let response;
@@ -249,7 +253,7 @@ pub async fn annotations_response(
 pub async fn filter_annotations_response(
     req: Request<Body>,
     annotation_store: Arc<Mutex<AnnotationStore>>
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     let data = hyper::body::to_bytes(req.into_body()).await?;
 
     let response;

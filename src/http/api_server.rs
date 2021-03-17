@@ -1,4 +1,3 @@
-use anyhow::Result;
 use hyper::{service::{make_service_fn, service_fn}, Body, Method, Request, Response, Server, StatusCode};
 
 use crate::streams::ChannelAuthor;
@@ -15,7 +14,7 @@ pub async fn start(
     author: Arc<Mutex<ChannelAuthor>>,
     annotation_store: Arc<Mutex<AnnotationStore>>,
     reading_store: Arc<Mutex<ReadingStore>>
-) -> Result<()> {
+) -> Result<(), GenericError> {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     let service = make_service_fn(move |_| {
@@ -49,7 +48,7 @@ async fn responder(
     annotation_store: Arc<Mutex<AnnotationStore>>,
     reading_store: Arc<Mutex<ReadingStore>>,
 
-) -> Result<Response<Body>> {
+) -> Result<Response<Body>, GenericError> {
     match (req.method(), req.uri().path()) {
         (&Method::POST, "/subscribe") => subscribe_response(req, author).await,
         (&Method::GET, "/get_channel_address") => channel_address_response(author).await,

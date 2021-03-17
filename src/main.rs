@@ -41,5 +41,8 @@ async fn main() -> Result<()> {
         );
     MessageRetriever::start(retriever).unwrap();
 
-    api_server::start(port, author, annotation_store, reading_store).await
+    match api_server::start(port, author, annotation_store, reading_store).await {
+        Ok(_) => Ok(()),
+        Err(e) => Err(anyhow::anyhow!(e))
+    }
 }
