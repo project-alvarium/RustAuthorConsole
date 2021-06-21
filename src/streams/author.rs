@@ -1,14 +1,12 @@
 use anyhow::{Result,anyhow};
 use iota_streams::app::transport::{
-    TransportOptions,
     tangle::{
-        client::{Client, SendTrytesOptions},
+        client::{Client},
         PAYLOAD_BYTES,
         MsgId,
     }
 };
 use iota_streams::app_channels::api::tangle::{Address, Author, ChannelAddress, MessageContent};
-use iota_streams::core::psk::PskIds;
 use iota_streams::core_edsig::signature::ed25519::PublicKey;
 
 use std::str::FromStr;
@@ -22,14 +20,9 @@ pub struct ChannelAuthor {
 
 impl ChannelAuthor {
     pub fn new(seed: &str, mwm: u8, local_pow: bool, node: &str) -> Result<ChannelAuthor> {
-        // Prepare send options for client
-        let mut send_options = SendTrytesOptions::default();
-        send_options.min_weight_magnitude = mwm;
-        send_options.local_pow = local_pow;
 
         // Create Client instance
         let mut client = Client::new_from_url(node);
-        client.set_send_options(send_options);
 
         // Generate a multi branch Author instance and start the channel
         let mut author = Author::new(seed, "utf-8", PAYLOAD_BYTES, true, client);
@@ -66,7 +59,7 @@ impl ChannelAuthor {
 
                 let keyload = self.author.send_keyload(
                     &self.announcement_id,
-                    &PskIds::new(),
+                    &vec![],
                     &vec![PublicKey::from_bytes(pk).unwrap()]
                 )?;
 
