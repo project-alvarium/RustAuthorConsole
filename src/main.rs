@@ -30,6 +30,8 @@ async fn main() -> Result<()> {
     let reading_store = Arc::new(Mutex::new(ReadingStore::new()));
 
     println!("Making Streams channel...");
+    println!("node = {}", config["node"]);
+    println!("seed = {}", seed.as_str());
     let author = Arc::new(Mutex::new(ChannelAuthor::new(seed.as_str(), mwm, local_pow, node).unwrap()));
     let channel_address = author.lock().unwrap().get_announcement_id().unwrap();
     println!("\nChannel Address - {}:{}\n", channel_address.0, channel_address.1);
