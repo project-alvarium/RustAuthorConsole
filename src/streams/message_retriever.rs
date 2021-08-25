@@ -44,10 +44,21 @@ impl MessageRetriever {
         let mut author = self.author.lock().unwrap();
         let msgs = author.get_next_msgs().unwrap();
 
-        for (reading, annotation) in msgs {
-            println!("Got a new {} message", if reading.is_some() {"reading"} else {"annotation"});
+        for (custom, reading, annotation) in msgs {
+            println!("Got a new {} message", if custom.is_some() {"custom"} else { if reading.is_some() {"reading"} else {"annotation"} });
 
-            if reading.is_some() {
+            if custom.is_some() {
+                let custom = custom.unwrap();
+                let action = &custom["action"];
+                let message_type = &custom["messageType"];
+                let contents = &custom["content"];
+                for i in 0..contents["items"].len() {
+                    let annotation = &contents["items"][i];
+                    println!("Found a custom payload. Action: {}, Type: {}, contents: {}",
+                             action, message_type, annotation
+                    )
+                }
+            } else if reading.is_some() {
                 let reading = reading.unwrap();
                 let sensor_id = reading.get_sensor_id().clone();
                 println!("Storing reading: {}", serde_json::to_string(&reading).unwrap());
@@ -63,6 +74,7 @@ impl MessageRetriever {
                 println!("Stored\n");
             }
         }
+        thread::sleep(std::time::Duration::from_secs(1))
     }
 
 }

@@ -11,6 +11,7 @@ use iota_streams::core_edsig::signature::ed25519::PublicKey;
 
 use std::str::FromStr;
 use crate::models::{Reading, Annotation};
+use json::JsonValue;
 
 pub struct ChannelAuthor {
     author: Author<Client>,
@@ -72,7 +73,7 @@ impl ChannelAuthor {
         }
     }
 
-    pub fn get_next_msgs(&mut self) -> Result<Vec<(Option<Reading>, Option<Annotation>)>> {
+    pub fn get_next_msgs(&mut self) -> Result<Vec<(Option<JsonValue>, Option<Reading>, Option<Annotation>)>> {
         let mut found_msgs = Vec::new();
 
         let response = self.author.fetch_next_msgs();
@@ -81,12 +82,18 @@ impl ChannelAuthor {
                 MessageContent::SignedPacket {pk: _, public_payload: _, masked_payload: m} => {
                     let reading: serde_json::Result<Reading> = serde_json::from_slice(&m.0);
                     match reading {
-                        Ok(r) => found_msgs.push((Some(r), None)),
+                        Ok(r) => found_msgs.push((None, Some(r), None)),
                         Err(_) => {
                             let annotation: serde_json::Result<Annotation> = serde_json::from_slice(&m.0);
                             match annotation {
-                                Ok(a) => found_msgs.push((None, Some(a))),
-                                Err(_) => { println!("Error deserializing message") }
+                                Ok(a) => found_msgs.push((None, None, Some(a))),
+                                Err(_) => match String::from_utf8(m.0.as_slice().to_vec()) {
+                                    Ok(s) => match json::parse(&s) {
+                                        Ok(json) => found_msgs.push((Some(json), None, None)),
+                                        Err(e) => println!("Error deserializing message: {}", e.to_string())
+                                    }
+                                    Err(e) => println!("Error deserializing message: {}", e.to_string())
+                                }
                             };
                         }
                     }
