@@ -20,10 +20,9 @@ async fn main() -> Result<()> {
         seed = config["seed"].as_str().unwrap().to_string()
     }
 
-    let mwm = config["mwm"].as_u64().unwrap() as u8;
     let node = config["node"].as_str().unwrap();
-    let local_pow = config["local_pow"].as_bool().unwrap();
     let port = config["api_port"].as_u64().unwrap() as u16;
+    let psk = config["pre_shared_key"].as_str().unwrap();
 
 
     let annotation_store = Arc::new(Mutex::new(AnnotationStore::new()));
@@ -32,7 +31,7 @@ async fn main() -> Result<()> {
     println!("Making Streams channel...");
     println!("node = {}", config["node"]);
     println!("seed = {}", seed.as_str());
-    let author = Arc::new(Mutex::new(ChannelAuthor::new(seed.as_str(), mwm, local_pow, node).unwrap()));
+    let author = Arc::new(Mutex::new(ChannelAuthor::new(seed.as_str(), node, psk).unwrap()));
     let channel_address = author.lock().unwrap().get_announcement_id().unwrap();
     println!("\nChannel Address - {}:{}\n", channel_address.0, channel_address.1);
 

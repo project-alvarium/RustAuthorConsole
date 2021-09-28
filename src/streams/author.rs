@@ -6,7 +6,12 @@ use iota_streams::app::transport::{
         MsgId,
     }
 };
-use iota_streams::app_channels::api::tangle::{Address, Author, ChannelAddress, MessageContent};
+use iota_streams::app_channels::api::{
+    pskid_from_psk,
+    psk_from_seed,
+    PskId,
+    tangle::{Address, Author, ChannelAddress, MessageContent}
+};
 use iota_streams::core_edsig::signature::ed25519::PublicKey;
 
 use std::str::FromStr;
@@ -16,10 +21,11 @@ pub struct ChannelAuthor {
     author: Author<Client>,
     announcement_id: Address,
     channel_address: ChannelAddress,
+    subscriber_key_id: PskId,
 }
 
 impl ChannelAuthor {
-    pub fn new(seed: &str, mwm: u8, local_pow: bool, node: &str) -> Result<ChannelAuthor> {
+    pub fn new(seed: &str, node: &str, psk_str: &str) -> Result<ChannelAuthor> {
 
         // Create Client instance
         let mut client = Client::new_from_url(node);
@@ -28,10 +34,15 @@ impl ChannelAuthor {
         let mut author = Author::new(seed, "utf-8", PAYLOAD_BYTES, true, client);
         let announcement_id = author.send_announce()?;
 
+        let psk = psk_from_seed(psk_str.as_bytes());
+        let pskid = pskid_from_psk(&psk);
+        author.store_psk(pskid, psk);
+
         Ok(ChannelAuthor {
             author: author,
             announcement_id: announcement_id.clone(),
-            channel_address: announcement_id.appinst.clone()
+            channel_address: announcement_id.appinst.clone(),
+            subscriber_key_id: pskid
         })
     }
 
@@ -59,7 +70,7 @@ impl ChannelAuthor {
 
                 let keyload = self.author.send_keyload(
                     &self.announcement_id,
-                    &vec![],
+                    &vec![self.subscriber_key_id],
                     &vec![PublicKey::from_bytes(pk).unwrap()]
                 )?;
 

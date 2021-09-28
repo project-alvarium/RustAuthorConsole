@@ -3,5 +3,6 @@
   "mwm": 5,
   "local_pow": true,
   "api_port": 8080,
-  "seed": null
+  "seed": null,
+  "pre_shared_key": "SubscriberPreSharedKey"
 }
